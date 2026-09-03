@@ -22,6 +22,15 @@ for s in douyin-content-extract thinking-toolkit talent-discovery life-design; d
 done
 ```
 
+## 管理工具
+
+`tools/skill-ls.py` 汇总本机全部 8 类技能来源（本仓、blog-workflow、业务源码仓、团队共享、Aone Copilot、Qoder 用户级、插件、Aone 云端安装），分类输出终端报告并生成总目录 `~/work/SKILLS.md`，同时校验软链挂载与 SKILL.md 完整性：
+
+```bash
+python3 ~/work/projects/skills/tools/skill-ls.py            # 终端输出 + 写 ~/work/SKILLS.md
+python3 ~/work/projects/skills/tools/skill-ls.py --no-write # 仅终端输出
+```
+
 ## 收录原则
 
 - 只收通用个人技能；业务专用技能（依赖 Aone/O2/Broccoli 等内部平台）不入库

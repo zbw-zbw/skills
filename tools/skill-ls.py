@@ -31,7 +31,7 @@ PLUGIN_CACHE = HOME / ".qoder/plugins/cache"
 CATALOG_FILE = HOME / "work/SKILLS.md"
 
 # 本地维护的少量事实标注（无法从路径推导的部分）
-DEPRECATED = {"pixel-restore", "h5-activity-dev", "h5-style-screenshots"}  # 已废弃的业务技能仓
+DEPRECATED = {"h5-activity-dev", "h5-style-screenshots"}  # 已废弃的业务技能仓
 AONE_PUBLISHED = {  # 已发布到 Aone 技能市场的技能（发布名 zbw01218944-<name>）
     "pixel-restore-next", "ai-coding-metrics", "h5-activity-workflow",
     "broccoli-publish", "skill-publish-sync", "daily-retrospect",

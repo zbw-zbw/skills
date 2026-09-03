@@ -7,9 +7,9 @@
   3. 业务技能源码仓       ~/work/projects/*/SKILL.md
   4. 团队共享项目技能     ~/work/projects/.agents/skills/
   5. Aone Copilot 安装   ~/.aone_copilot/skills/
-  6. Qoder 用户级安装    ~/.qoder/skills/（真实目录=市场安装，软链=仓挂载）
-  7. 插件技能           ~/.qoder/plugins/cache/<源>/<插件>/<版本>/skills/
-  8. Aone 技能市场云端安装（发布名 zbw01218944-<name>，本地无落盘，源仓在 ~/work/projects/）
+  6. a1 全局安装         ~/.agents/skills/（aone-kit 安装位，Qoder 会话同样扫描）
+  7. Qoder 用户级安装    ~/.qoder/skills/（真实目录=市场安装，软链=仓挂载）
+  8. 插件技能           ~/.qoder/plugins/cache/<源>/<插件>/<版本>/skills/
 
 用法：
   python3 skill-ls.py            # 终端输出 + 写 ~/work/SKILLS.md
@@ -26,18 +26,24 @@ BLOG_REPO = HOME / "work/blog-workflow"
 PROJECTS_DIR = HOME / "work/projects"
 TEAM_SKILLS = HOME / "work/projects/.agents/skills"
 AONE_SKILLS = HOME / ".aone_copilot/skills"
+AGENTS_SKILLS = HOME / ".agents/skills"
 QODER_SKILLS = HOME / ".qoder/skills"
 PLUGIN_CACHE = HOME / ".qoder/plugins/cache"
+PUBLISH_CACHE = HOME / ".cache/skill-publish-sync"
 CATALOG_FILE = HOME / "work/SKILLS.md"
+LOGIN_PREFIX = "zbw01218944-"
 
-# 本地维护的少量事实标注（无法从路径推导的部分）
-AONE_PUBLISHED = {  # 已发布到 Aone 技能市场的技能（发布名 zbw01218944-<name>）
-    "pixel-restore-next", "ai-coding-metrics", "h5-activity-workflow",
-    "broccoli-publish", "skill-publish-sync", "daily-retrospect",
-}
-AONE_MARKET_ONLY = {  # 仅通过 Aone 市场云端安装（本地 ~/.qoder/skills 无落盘）
-    "pixel-restore-next", "ai-coding-metrics", "h5-activity-workflow", "skill-publish-sync",
-}
+
+def aone_published() -> set:
+    """已发布 Aone 的技能集合，从 skill-publish-sync 成功缓存推导（写缓存=发布成功）。"""
+    names = set()
+    if PUBLISH_CACHE.is_dir():
+        for f in PUBLISH_CACHE.glob("*.last"):
+            name = f.stem
+            if name.startswith(LOGIN_PREFIX):
+                name = name[len(LOGIN_PREFIX):]
+            names.add(name)
+    return names
 
 
 def read_frontmatter(skill_md: Path) -> dict:
@@ -169,6 +175,10 @@ def collect():
 
     # 3. 业务技能源码仓
     entries = []
+    published = aone_published()
+    agents_installed = set()
+    if AGENTS_SKILLS.is_dir():
+        agents_installed = {d.name for d in AGENTS_SKILLS.iterdir() if not d.name.startswith(".")}
     if PROJECTS_DIR.is_dir():
         for d in sorted(PROJECTS_DIR.iterdir()):
             if not d.is_dir() or d.name.startswith(".") or d.name == "skills":
@@ -178,11 +188,13 @@ def collect():
                 continue
             meta = read_frontmatter(skill_md)
             base_name = meta["name"] or d.name
+            if base_name.startswith(LOGIN_PREFIX):
+                base_name = base_name[len(LOGIN_PREFIX):]
             flags = []
-            if base_name in AONE_PUBLISHED:
-                flags.append("已发布Aone市场(zbw01218944-)")
-                if base_name in AONE_MARKET_ONLY:
-                    flags.append("仅云端安装")
+            if base_name in published:
+                flags.append("已发布Aone(zbw01218944-)")
+                if base_name in agents_installed:
+                    flags.append("a1已装(~/.agents/skills)")
             m = mount_of(d)
             flags.append(f"挂载:{m}" if m else "未挂载")
             g = git_info(d)
@@ -202,7 +214,11 @@ def collect():
     entries = scan_dir_skills(AONE_SKILLS)
     data["aone"] = {"title": f"Aone Copilot 安装（{AONE_SKILLS}）", "entries": entries, "extra": ""}
 
-    # 6. Qoder 用户级安装
+    # 6. a1 全局安装（Qoder 会话同样扫描）
+    entries = scan_dir_skills(AGENTS_SKILLS)
+    data["agents"] = {"title": f"a1 全局安装（{AGENTS_SKILLS}）", "entries": entries, "extra": "aone-kit 安装位，Qoder 会话技能来源之一"}
+
+    # 7. Qoder 用户级安装
     entries = []
     if QODER_SKILLS.is_dir():
         for d in sorted(QODER_SKILLS.iterdir()):
@@ -220,7 +236,7 @@ def collect():
             })
     data["qoder"] = {"title": f"Qoder 用户级安装（{QODER_SKILLS}）", "entries": entries, "extra": ""}
 
-    # 7. 插件技能
+    # 8. 插件技能
     packs = []
     total = 0
     if PLUGIN_CACHE.is_dir():
@@ -255,6 +271,9 @@ def consistency_checks(data: dict) -> list:
     for entry in data["aone"]["entries"]:
         if not (entry["path"] / "SKILL.md").is_file():
             issues.append(f"[断链] Aone 安装 {entry['name']} 的 SKILL.md 不可读（软链失效）")
+    for entry in data["agents"]["entries"]:
+        if not (entry["path"] / "SKILL.md").is_file():
+            issues.append(f"[断链] a1 安装 {entry['name']} 的 SKILL.md 不可读（软链失效）")
     return issues
 
 
@@ -262,7 +281,7 @@ def print_report(data: dict, issues: list):
     def row(name, ver, desc, flags):
         print(f"  {name:<28} {ver:<8} {desc:<48} {' '.join(flags)}")
 
-    for key in ("monorepo", "blog", "business", "team", "aone", "qoder"):
+    for key in ("monorepo", "blog", "business", "team", "aone", "agents", "qoder"):
         sec = data[key]
         if not sec["entries"]:
             continue
@@ -296,7 +315,8 @@ def write_catalog(data: dict, issues: list):
     for key, label in (
         ("monorepo", "个人通用 · monorepo"), ("blog", "个人通用 · 独立仓"),
         ("business", "业务专用 · 源码仓"), ("team", "团队共享 · 项目级"),
-        ("aone", "Aone Copilot 安装"), ("qoder", "Qoder 用户级安装"),
+        ("aone", "Aone Copilot 安装"), ("agents", "a1 全局安装"),
+        ("qoder", "Qoder 用户级安装"),
     ):
         n = len(data[key]["entries"])
         total += n
@@ -307,7 +327,7 @@ def write_catalog(data: dict, issues: list):
         "",
     ]
 
-    for key in ("monorepo", "blog", "business", "team", "aone", "qoder"):
+    for key in ("monorepo", "blog", "business", "team", "aone", "agents", "qoder"):
         sec = data[key]
         if not sec["entries"]:
             continue

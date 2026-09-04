@@ -26,6 +26,42 @@ for s in code-discipline douyin-content-extract img-optimize thinking-toolkit ta
 done
 ```
 
+## 挂载管理（统一规则）
+
+源码仓集中在 `~/work/projects/<skill-name>`（git 管理），双侧软链挂载：
+
+| 挂载位 | 名称规则 | 说明 |
+|---|---|---|
+| `~/.qoder/skills/` | 原始名（frontmatter name） | Qoder 用户级 |
+| `~/.agents/skills/` | 已发布 Aone 用渠道名 `<工号前缀>-<name>`；未发布用原始名 | a1/Aone 渠道语义，跨 agent 读取 |
+
+- 通用 monorepo 内 6 个 skill 双侧挂载（均未发布 Aone，双侧原始名）
+- 业务 skill 源码仓双挂：qoder 侧原始名 + agents 侧渠道名
+- 市场安装的实体目录（非软链）不动，走独立升级机制
+- 挂载状态动态检查：`python3 $SKILLS_ROOT/tools/skill-ls.py --no-write`（源码仓扫出「未挂载」即缺口）
+
+业务 skill 补挂载（逐行读，zsh/bash 通用；源码目录名与挂载名不同时第二列映射，可重复执行）：
+
+```bash
+while read -r src name; do
+  [ -z "$src" ] && continue
+  ln -sfn ~/work/projects/$src ~/.qoder/skills/$name
+  ln -sfn ~/work/projects/$src ~/.agents/skills/zbw01218944-$name
+done <<'EOF'
+ai-coding-metrics ai-coding-metrics
+aone-bug-loop aone-bug-loop
+broccoli-component-dev broccoli-component-dev
+broccoli-publish-skill broccoli-publish
+daily-retrospect daily-retrospect
+delivery-gate delivery-gate
+h5-activity-workflow h5-activity-workflow
+intranet-sso-dev-proxy intranet-sso-dev-proxy
+pixel-restore-next pixel-restore-next
+skill-publish-sync skill-publish-sync
+uc-track-verify uc-track-verify
+EOF
+```
+
 ## 管理工具
 
 `tools/skill-ls.py` 汇总本机全部 8 类技能来源（本仓、blog-workflow、业务源码仓、团队共享、Aone Copilot、Qoder 用户级、插件、Aone 云端安装），分类输出终端报告并生成总目录 `~/work/SKILLS.md`，同时校验软链挂载与 SKILL.md 完整性。属本机管理工具（按本机 `~/work` 目录约定扫描），用法信息存全局记忆，不入通用 skill 正文：

@@ -104,12 +104,12 @@ def git_info(repo: Path) -> str:
     return ",".join(flags)
 
 
-def qoder_mounts() -> dict:
-    """~/.qoder/skills 挂载表：源路径(解析后) -> 挂载名。"""
+def mounts_of(base: Path) -> dict:
+    """挂载表：源路径(解析后) -> 挂载名。扫描 base 下的软链。"""
     mounts = {}
-    if not QODER_SKILLS.is_dir():
+    if not base.is_dir():
         return mounts
-    for entry in QODER_SKILLS.iterdir():
+    for entry in base.iterdir():
         if entry.name.startswith("."):
             continue
         if entry.is_symlink():
@@ -141,9 +141,16 @@ def scan_dir_skills(base: Path) -> list:
 
 
 def collect():
-    mounts = qoder_mounts()
+    q_mounts = mounts_of(QODER_SKILLS)
+    a_mounts = mounts_of(AGENTS_SKILLS)
     def mount_of(path: Path) -> str:
-        return mounts.get(str(path.resolve()), "")
+        key = str(path.resolve())
+        parts = []
+        if key in q_mounts:
+            parts.append(f"qoder:{q_mounts[key]}")
+        if key in a_mounts:
+            parts.append(f"agents:{a_mounts[key]}")
+        return " + ".join(parts)
 
     data = {}
 
@@ -178,7 +185,7 @@ def collect():
     published = aone_published()
     agents_installed = set()
     if AGENTS_SKILLS.is_dir():
-        agents_installed = {d.name for d in AGENTS_SKILLS.iterdir() if not d.name.startswith(".")}
+        agents_installed = {(d.name[len(LOGIN_PREFIX):] if d.name.startswith(LOGIN_PREFIX) else d.name) for d in AGENTS_SKILLS.iterdir() if not d.name.startswith(".")}
     if PROJECTS_DIR.is_dir():
         for d in sorted(PROJECTS_DIR.iterdir()):
             if not d.is_dir() or d.name.startswith(".") or d.name == "skills":

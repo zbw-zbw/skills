@@ -20,6 +20,23 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
+// zlib.crc32 在 Node 20.15+/22.2+ 才存在；低版本用纯 JS 查表兑底（保证 Node ≥16 全版本可用）
+const crc32 = zlib.crc32
+  ? (buf) => zlib.crc32(buf) >>> 0
+  : (() => {
+      const T = new Int32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        T[n] = c;
+      }
+      return (buf) => {
+        let c = -1;
+        for (let i = 0; i < buf.length; i++) c = (c >>> 8) ^ T[(c ^ buf[i]) & 0xff];
+        return (c ^ -1) >>> 0;
+      };
+    })();
+
 const PNG_SIG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const STRIP_TYPES = new Set(['tEXt', 'zTXt', 'iTXt', 'tIME']); // eXIf 永不剔除，见头部注释
 const CHANNELS = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 };
@@ -40,7 +57,7 @@ function parsePng(buf) {
     if (!/^[a-zA-Z]{4}$/.test(type)) throw new Error('bad chunk type');
     const data = buf.slice(off + 8, off + 8 + len);
     const crc = buf.readUInt32BE(off + 8 + len);
-    const crcExpect = zlib.crc32(Buffer.concat([Buffer.from(type, 'ascii'), data])) >>> 0;
+    const crcExpect = crc32(Buffer.concat([Buffer.from(type, 'ascii'), data]));
     if (crc !== crcExpect) throw new Error(`crc mismatch in ${type}`);
     chunks.push({ type, data });
     off += 12 + len;
@@ -172,7 +189,7 @@ function pushChunk(arr, type, data) {
   len.writeUInt32BE(data.length);
   const t = Buffer.from(type, 'ascii');
   const crcBuf = Buffer.alloc(4);
-  crcBuf.writeUInt32BE(zlib.crc32(Buffer.concat([t, data])) >>> 0);
+  crcBuf.writeUInt32BE(crc32(Buffer.concat([t, data])));
   arr.push(len, t, data, crcBuf);
 }
 

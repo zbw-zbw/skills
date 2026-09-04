@@ -7,11 +7,11 @@
 **无损**（像素不变：huffman 表优化 + 渐进式 + 剥元数据）：
 
 ```bash
-# jpegtran 随 libjpeg/mozjpeg 安装（brew install jpeg-turbo / mozjpeg）
+# jpegtran 随 libjpeg/mozjpeg 安装（安装矩阵见 decision-matrix.md）
 for f in src/**/*.jpg; do
   jpegtran -optimize -copy none -progressive -outfile "$f.tmp" "$f" && mv "$f.tmp" "$f"
 done
-```
+# 批量场景直接用 skill 的 scripts/imgmin.js（已内置 skip-if-larger，跨平台）
 
 - `-optimize`：优化 huffman 表；`-progressive`：渐进式加载（多数场景体验更优）
 - `-copy none`：剥除 EXIF/注释——**若图含 Orientation 方向标记，剥除后浏览器显示方向会变**；带方向的手机照片先确认再剥（用 `-copy all` 保留）
@@ -29,7 +29,7 @@ done
 ## SVG
 
 ```bash
-brew install svgo
+# svgo 安装：macOS brew / 其他平台 npm i -g svgo（矩阵见 decision-matrix.md）
 svgo --multipass icon.svg           # 单文件原地优化
 svgo --multipass -f src/assets      # 整目录
 ```

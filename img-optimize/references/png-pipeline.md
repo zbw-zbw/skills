@@ -5,10 +5,9 @@
 成熟工具优先：
 
 ```bash
-brew install oxipng
+# 安装命令见 decision-matrix.md 三平台矩阵（macOS brew / Linux apt / Windows scoop）
 oxipng -o max --strip safe src/**/*.png
-# -o max：最高优化级（多策略穷举）
-# --strip safe：只剔非渲染元数据；默认结果更大时不写入（天然 skip-if-larger）
+# -o max：最高优化级（多策略穷举）；--strip safe 只剔非渲染元数据；结果更大时不写入
 ```
 
 **断网/受限环境兜底**（本 skill 自带，optipng 同原理的纯 Node 实现，零依赖，Node ≥16）：
@@ -26,7 +25,7 @@ node scripts/png-optimize.js 文件或目录  # 指定目标
 ## 阶段二：调色板量化（肉眼无损收尾）
 
 ```bash
-brew install pngquant
+# 安装命令见 decision-matrix.md 三平台矩阵
 pngquant --quality=80-95 --skip-if-larger --force --ext .png src/**/*.png
 ```
 
@@ -38,7 +37,7 @@ pngquant --quality=80-95 --skip-if-larger --force --ext .png src/**/*.png
 
 批量退出码语义：`98`=有图因 skip-if-larger 跳过，`99`=有图质量不达标——**非 0 不代表整体失败**，看逐图输出判断。
 
-**已量化检测（防重复量化）**：执行前读 IHDR 第 25 字节判 colorType，`3`（索引色）= 已量化图，跳过 pngquant 直接进无损收尾——重复量化有累积质量损失风险（双重保护阀也拦不住色数缓降）。判定一行即可：`xxd -s 25 -l 1 -p file.png` → `03`。TinyPNG 处理过的素材再补压缩时必过此检。
+**已量化检测（防重复量化）**：执行前读 IHDR 第 25 字节判 colorType，`3`（索引色）= 已量化图，跳过 pngquant 直接进无损收尾——重复量化有累积质量损失风险（双重保护阀也拦不住色数缓降）。TinyPNG 处理过的素材再补压缩时必过此检；批量场景直接用 skill 的 `scripts/imgmin.js`（已内置此检测），单张手查：`xxd -s 25 -l 1 -p file.png` → `03`（Windows 用 PowerShell：`[System.IO.File]::ReadAllBytes("file.png")[25]`）。
 
 执行前必须向用户确认「肉眼无损可接受」（量化会改像素）。素材敏感/不想耗配额时，pngquant 就是 TinyPNG 的本地同级替代。
 

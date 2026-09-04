@@ -1,8 +1,8 @@
 ---
 name: img-optimize
-version: 1.0.0
+version: 1.1.0
 description: 图片压缩最佳实践：按「质量档位 × 格式 × 环境」三步分流到成熟工具（pngquant/oxipng/jpegtran/cwebp/svgo/TinyPNG），PNG 两阶段流水线（无损打底+量化收尾）经 39 张实战闭环验证 -71%，含验证闭环与断网纯 Node 兜底脚本。Use when 压缩/优化/瘦身项目图片素材、图片体积过大、接入 TinyPNG、给项目搭一键 imgmin 命令时。触发词：压缩图片、图片优化、素材瘦身、无损压缩、肉眼无损、TinyPNG、pngquant、oxipng、imgmin、图片压缩最佳实践。
-compatibility: "任意项目；本地通道需 brew 工具（pngquant/oxipng/jpegtran/svgo 按格式选装）或 Node ≥16；TinyPNG 通道需外网与 API key"
+compatibility: "任意项目与平台（macOS/Linux/Windows）；本地通道需装 CLI 工具（安装矩阵见 decision-matrix.md）或 Node ≥16（断网兑底脚本，crc32 已内置低版本 polyfill）；TinyPNG 通道需外网与 API key"
 license: MIT
 allowed-tools: Bash Read Write Edit Glob Grep
 metadata:
@@ -37,7 +37,18 @@ metadata:
     └─ 不可以 → 本地 pngquant（带质量保护阀，同级效果）
 ```
 
-工具全景矩阵、通道适用边界与收益数量级 → [references/decision-matrix.md](references/decision-matrix.md)
+工具全景矩阵、三平台安装命令、通道适用边界与收益数量级 → [references/decision-matrix.md](references/decision-matrix.md)
+
+## 一键编排器（多格式批量场景）
+
+PNG+JPG+SVG 混合批量压缩时不必逐格式拼命令，直接调 skill 自带编排器（项目零文件，任何目录可用）：
+
+```bash
+node ~/.agents/skills/img-optimize/scripts/imgmin.js [目录=src]   # macOS/Linux
+# Windows: node %USERPROFILE%\.agents\skills\img-optimize\scripts\imgmin.js src
+```
+
+内置：工具探测与缺失降级、已量化检测（防重复量化）、WebP/AVIF 跳过、前后体积报告。团队想要 `npm run imgmin` 快捷方式时，package.json scripts 一行指向上述绝对路径即可（可选，非必需）。
 
 ## 格式分流
 

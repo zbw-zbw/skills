@@ -7,7 +7,7 @@
 1. **git 范围确认**：`git status` / `git diff --stat`——改动应仅图片文件（或与用户确认过的辅助文件）；混入预期外文件立即排查
 2. **独立像素校验（无损通道必做）**：不信压缩工具自己的校验，用独立解码器对旧文件（git 恢复或压缩前备份）与新文件分别展开到 **RGBA 真彩缓冲**逐像素比对（调色板图先经 PLTE+tRNS 映射回真彩）。**macOS sips PNG→TIFF 后 cmp 不能作为判据**；**字节流/索引级比对也不能**（palette 重排与位深优化是合法无损变换，见避坑清单）
 3. **构建验证**：`npm run build` 跑通（老构建链可能锁定旧 Node 版本，如 16）——确认 webpack 资源管线正常、产物 contenthash 更新
-4. **发布后 CDN 抽查**：用构建/发布日志里**带 contenthash 的资源名**（裸文件名 URL 不存在）；抽查 HTTP 200 且字节数与本地 `stat -f%z` 一致
+4. **发布后 CDN 抽查**：用构建/发布日志里**带 contenthash 的资源名**（裸文件名 URL 不存在）；抽查 HTTP 200 且字节数与本地一致（体积命令：macOS `stat -f%z f` / Linux `stat -c%s f` / Windows PowerShell `(Get-Item f).Length`）
 
 ## 避坑清单（全部实战踩过或核实过）
 

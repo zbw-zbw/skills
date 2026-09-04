@@ -6,7 +6,7 @@
 
 | 技能 | 用途 |
 |---|---|
-| [code-discipline](./code-discipline/) | AI 写代码通用纪律：注释克制禁 emoji、改动最小化、跟随项目风格、不滥依赖不过度设计、不编造 API、交付前跑验证；内置自迭代协议（被纠正/踩坑时把经验沉淀进对应 skill）。每次编码任务必触发 |
+| [code-discipline](./code-discipline/) | AI 写代码通用纪律：注释克制禁 emoji、改动最小化、跟随项目风格、不滥依赖不过度设计、不编造 API、通用产物不绑本机路径、交付前跑验证；内置自迭代协议（被纠正/踩坑时把经验沉淀进对应 skill）。每次编码任务必触发 |
 | [douyin-content-extract](./douyin-content-extract/) | 提取抖音视频/图文帖的完整文案（原图视觉识别，零 OCR 误差） |
 | [img-optimize](./img-optimize/) | 图片压缩最佳实践：质量档位×格式×环境三步分流到成熟工具（pngquant/oxipng/jpegtran/svgo/TinyPNG），含验证闭环与断网纯 Node 兜底脚本 |
 | [thinking-toolkit](./thinking-toolkit/) | 10 个结构化思维框架，按问题自动路由执行 |
@@ -17,21 +17,22 @@
 ## 跨机恢复
 
 ```bash
-git clone git@github.com:zbw-zbw/skills.git ~/work/projects/skills
+git clone git@github.com:zbw-zbw/skills.git ~/work/projects/skills   # clone 到任意目录皆可
+SKILLS_ROOT=~/work/projects/skills                                    # 下述命令均以此变量引用
 
 for s in code-discipline douyin-content-extract img-optimize thinking-toolkit talent-discovery life-design; do
-  ln -s ~/work/projects/skills/$s ~/.qoder/skills/$s
-  ln -s ~/work/projects/skills/$s ~/.agents/skills/$s
+  ln -s $SKILLS_ROOT/$s ~/.qoder/skills/$s
+  ln -s $SKILLS_ROOT/$s ~/.agents/skills/$s
 done
 ```
 
 ## 管理工具
 
-`tools/skill-ls.py` 汇总本机全部 8 类技能来源（本仓、blog-workflow、业务源码仓、团队共享、Aone Copilot、Qoder 用户级、插件、Aone 云端安装），分类输出终端报告并生成总目录 `~/work/SKILLS.md`，同时校验软链挂载与 SKILL.md 完整性：
+`tools/skill-ls.py` 汇总本机全部 8 类技能来源（本仓、blog-workflow、业务源码仓、团队共享、Aone Copilot、Qoder 用户级、插件、Aone 云端安装），分类输出终端报告并生成总目录 `~/work/SKILLS.md`，同时校验软链挂载与 SKILL.md 完整性。属本机管理工具（按本机 `~/work` 目录约定扫描），用法信息存全局记忆，不入通用 skill 正文：
 
 ```bash
-python3 ~/work/projects/skills/tools/skill-ls.py            # 终端输出 + 写 ~/work/SKILLS.md
-python3 ~/work/projects/skills/tools/skill-ls.py --no-write # 仅终端输出
+python3 $SKILLS_ROOT/tools/skill-ls.py            # 终端输出 + 写 ~/work/SKILLS.md
+python3 $SKILLS_ROOT/tools/skill-ls.py --no-write # 仅终端输出
 ```
 
 ## 收录原则

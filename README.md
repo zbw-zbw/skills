@@ -7,6 +7,7 @@
 | 技能 | 用途 |
 |---|---|
 | [douyin-content-extract](./douyin-content-extract/) | 提取抖音视频/图文帖的完整文案（原图视觉识别，零 OCR 误差） |
+| [img-optimize](./img-optimize/) | 图片压缩最佳实践：质量档位×格式×环境三步分流到成熟工具（pngquant/oxipng/jpegtran/svgo/TinyPNG），含验证闭环与断网纯 Node 兜底脚本 |
 | [thinking-toolkit](./thinking-toolkit/) | 10 个结构化思维框架，按问题自动路由执行 |
 | [talent-discovery](./talent-discovery/) | 深度天赋挖掘——苏格拉底式追问拼出个人天赋使用说明书 |
 | [life-design](./life-design/) | 斯坦福人生设计方法，生成三个五年人生版本与原型行动清单 |
@@ -17,8 +18,9 @@
 ```bash
 git clone git@github.com:zbw-zbw/skills.git ~/work/projects/skills
 
-for s in douyin-content-extract thinking-toolkit talent-discovery life-design; do
+for s in douyin-content-extract img-optimize thinking-toolkit talent-discovery life-design; do
   ln -s ~/work/projects/skills/$s ~/.qoder/skills/$s
+  ln -s ~/work/projects/skills/$s ~/.agents/skills/$s
 done
 ```
 

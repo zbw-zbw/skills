@@ -6,7 +6,7 @@
 
 | 技能 | 用途 |
 |---|---|
-| [code-discipline](./code-discipline/) | AI 写代码通用纪律：注释克制禁 emoji、改动最小化、跟随项目风格、不滥依赖不过度设计、不编造 API、交付前跑验证。每次编码任务必触发 |
+| [code-discipline](./code-discipline/) | AI 写代码通用纪律：注释克制禁 emoji、改动最小化、跟随项目风格、不滥依赖不过度设计、不编造 API、交付前跑验证；内置自迭代协议（被纠正/踩坑时把经验沉淀进对应 skill）。每次编码任务必触发 |
 | [douyin-content-extract](./douyin-content-extract/) | 提取抖音视频/图文帖的完整文案（原图视觉识别，零 OCR 误差） |
 | [img-optimize](./img-optimize/) | 图片压缩最佳实践：质量档位×格式×环境三步分流到成熟工具（pngquant/oxipng/jpegtran/svgo/TinyPNG），含验证闭环与断网纯 Node 兜底脚本 |
 | [thinking-toolkit](./thinking-toolkit/) | 10 个结构化思维框架，按问题自动路由执行 |
